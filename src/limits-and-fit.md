@@ -45,5 +45,6 @@ A separate [Glossary](glossary.md) defines the framework's terminology, with ref
 ## See also
 
 - [What Graviola is](what-graviola-is.md) — the positive definition.
+- [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md) — scope and value when generative coding is in the picture.
 - [Architectural trajectory](trajectory.md) — future direction vs today's guarantees.
 - [Further reading](further-reading.md) — external papers and tools.

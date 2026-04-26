@@ -16,7 +16,9 @@
 
 # Part III — Direction & vocabulary
 
+- [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md)
 - [Architectural trajectory](trajectory.md)
 - [LinkML as an authoring source for schemas](linkml-authoring.md)
+- [Outlook and open questions](outlook-and-open-questions.md)
 - [Glossary](glossary.md)
 - [Further reading](further-reading.md)

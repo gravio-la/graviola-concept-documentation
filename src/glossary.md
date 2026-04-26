@@ -1,6 +1,6 @@
 # Graviola Glossary
 
-> **Navigation:** This glossary deepens vocabulary used across the book. For the product overview first, see [What Graviola is](what-graviola-is.md) and [Capabilities today](capabilities-today.md). For future direction, see [Architectural trajectory](trajectory.md).
+> **Navigation:** This glossary deepens vocabulary used across the book. For the product overview first, see [What Graviola is](what-graviola-is.md) and [Capabilities today](capabilities-today.md). For future direction, see [Architectural trajectory](trajectory.md). For unresolved design questions that span multiple terms, see [Outlook and open questions](outlook-and-open-questions.md).
 
 A working vocabulary for the Graviola framework: federated, schema-evolving, local-first semantic data infrastructure. This glossary names the concepts Graviola relies on, points at the literature and prior projects that defined or refined each one, and gives short examples grounded in Graviola's actual use cases (cultural heritage, personal information management, offline-first field deployments).
 
@@ -309,7 +309,7 @@ The unresolved design tension for federated calculated fields:
 - **Pure derivation:** each peer recomputes locally from synced inputs. Clean, always consistent, potentially expensive.
 - **Cached materialized view:** results are computed once (e.g., server-side) and synced; must invalidate correctly across version skew.
 
-Genuinely an open problem when combined with [Schema Drift](#24-schema-drift) across CRDT-synced peers. See [Cross-Version Calc Sync](#71-cross-version-calc-sync).
+Genuinely an open problem when combined with [Schema Drift](#24-schema-drift) across CRDT-synced peers. See [Cross-version calc sync](outlook-and-open-questions.md#cross-version-calc-sync).
 
 ---
 
@@ -388,28 +388,6 @@ The schema-driven form rendering library Graviola uses for UI generation. Embodi
 Graviola's interface contract for a concrete data backend. Implementations include in-memory stores, Yjs-backed stores, SPARQL endpoints, Prisma-backed relational stores, and others. The lens engine, IVM layer, and signing layer are *opt-in* features that a given `AbstractDatastore` implementation may or may not expose; consumers of an `AbstractDatastore` discover available capabilities through its declared interface.
 
 *See also:* [Capability Context](#47-capability-context), [Classical Migration](#63-classical-migration).
-
----
-
-## 7. Open Questions / Frontier
-
-### 7.1 Cross-Version Calc Sync
-How to reconcile a [Calculated Field](#41-calculated-field) computed on a peer at `V_a` with one computed on a peer at `V_b` when the underlying schemas are linked by a [Lossy Lens](#213-lossy-lens). Likely requires the calc to declare its valid version range and the runtime to skip cross-version cache reuse.
-
----
-
-### 7.2 Lens Inference
-Whether (and to what extent) lenses between adjacent schema versions can be inferred from a structural diff of the schemas themselves, rather than authored by hand. Promising for trivial cases (rename, add-with-default); intractable in general.
-
----
-
-### 7.3 Provenance Through Lenses
-How [Signed States](#54-signed-state) survive forward-and-back migration. A signature over `Person_V1` is not a signature over `Person_V2` — but if the lens is signed and well-behaved, the trust can be transitively reconstructed. Design unclear.
-
----
-
-### 7.4 Calc Migration Across Lossy Boundaries
-When a [Calculated Field](#41-calculated-field) reads a field that gets split or merged by a [Lossy Lens](#213-lossy-lens), the formula no longer references valid sources in the new schema. Auto-rewriting formulas across lossy boundaries silently produces wrong results; the safe default is to mark the calc as invalidated under that migration and surface it. A better answer is open.
 
 ---
 

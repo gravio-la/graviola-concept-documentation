@@ -35,4 +35,5 @@ Graviola's response is to take **JSON Schema as the runtime single source of tru
 - [Capabilities today](capabilities-today.md) — concrete production features.
 - [Architecture and data flow](architecture.md) — layers and pipelines.
 - [LinkML as an authoring source for schemas](linkml-authoring.md) — optional build-time modeling upstream of JSON Schema.
+- [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md) — why schema-first design stays relevant when models draft application code.
 - [Graviola framework monorepo](https://github.com/gravio-la/graviola-framework) — source and `apps/testapp`.

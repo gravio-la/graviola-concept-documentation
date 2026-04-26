@@ -8,6 +8,8 @@ For **what ships today**, see [Capabilities today](capabilities-today.md).
 
 **Authoring versus trajectory:** build-time modeling choices (for example generating JSON Schema and UI schema from [LinkML as an authoring source for schemas](linkml-authoring.md)) are separate from the capabilities below. LinkML is an optional application build step; it does not move unfinished runtime features into production.
 
+**Generative tooling versus trajectory:** assistance that drafts or refines schemas, forms, and mappings (see [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md)) attaches to the same declarative surfaces Graviola already uses; it does not substitute for the runtime capabilities sketched below.
+
 ---
 
 ## Schema evolution via lenses
@@ -56,5 +58,6 @@ Related glossary entries: [Schema-as-data](glossary.md#11-schema-as-data), [Fede
 
 - [Deployment scenarios](deployment-scenarios.md) — where trajectory topics intersect real deployments.
 - [LinkML as an authoring source for schemas](linkml-authoring.md) — optional upstream authoring; runtime trajectory unchanged.
-- [Glossary](glossary.md) — open questions at the frontier ([Cross-version calc sync](glossary.md#71-cross-version-calc-sync), etc.).
+- [Outlook and open questions](outlook-and-open-questions.md) — unresolved design tensions at the frontier ([Cross-version calc sync](outlook-and-open-questions.md#cross-version-calc-sync), etc.).
+- [Glossary](glossary.md) — definitions and references in one place.
 - [Further reading](further-reading.md).

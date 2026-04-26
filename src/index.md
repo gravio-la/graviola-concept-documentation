@@ -10,8 +10,9 @@ This book is **conceptual documentation** for [Graviola](https://github.com/grav
 - **Where it runs** — representative deployment shapes ([Deployment scenarios](deployment-scenarios.md)).
 - **Honest scope** — non-goals and when *not* to reach for Graviola ([Limits, fit, and evaluation](limits-and-fit.md)).
 - **Where it is heading** — architectural trajectory, clearly separated from production guarantees ([Architectural trajectory](trajectory.md)).
+- **Generative tooling** — why a small, reviewable schema remains a good contract when models can draft code and UI ([Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md)).
 - **Authoring upstream of JSON Schema** — optional build-time modeling (for example [LinkML as an authoring source for schemas](linkml-authoring.md)) that still emits the JSON Schema, UI schema, and mapping artifacts Graviola consumes at runtime.
-- **Shared vocabulary** — terms, literature, and open questions ([Glossary](glossary.md), [Further reading](further-reading.md)).
+- **Shared vocabulary** — terms and literature ([Glossary](glossary.md), [Further reading](further-reading.md)); frontier questions that span multiple terms live in [Outlook and open questions](outlook-and-open-questions.md).
 
 ## What this book is *not*
 
@@ -24,7 +25,7 @@ This book is **conceptual documentation** for [Graviola](https://github.com/grav
 1. Start with [The shape of a federated application](federated-application.md) if the *problem* is new.
 2. Read [What Graviola is](what-graviola-is.md) and [Capabilities today](capabilities-today.md) for the **current** product story.
 3. Use [Architecture and data flow](architecture.md) as the map of layers and pipelines.
-4. Treat [Architectural trajectory](trajectory.md) and the [Glossary](glossary.md) as **deepening** material—optional until you need precision on lenses, sync, trust, etc.
+4. Treat [Architectural trajectory](trajectory.md), [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md), [Outlook and open questions](outlook-and-open-questions.md), and the [Glossary](glossary.md) as **deepening** material—optional until you need precision on lenses, sync, trust, generative workflows, or vocabulary.
 5. If authoring fragmentation (many files per model) matters to your team, read [LinkML as an authoring source for schemas](linkml-authoring.md) for a build-time pattern that leaves Graviola's runtime unchanged.
 
 Canonical **seed** sources for this edition live under [`seed/`](https://github.com/gravio-la/graviola-conceptual-documentation/tree/main/seed) in the same repository; chapters here are the book-shaped rearrangement of that content.
@@ -33,3 +34,4 @@ Canonical **seed** sources for this edition live under [`seed/`](https://github.
 
 - [Graviola framework monorepo](https://github.com/gravio-la/graviola-framework) — code, `apps/testapp`, packages under `@graviola/*`.
 - [Glossary](glossary.md) — definitions and references in one place.
+- [Outlook and open questions](outlook-and-open-questions.md) — unresolved tensions at the design frontier.
