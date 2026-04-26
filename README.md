@@ -21,10 +21,10 @@ nix develop
 mdbook-mermaid install && mdbook build
 ```
 
-Same build as CI (install, build, then exit):
+Same build as CI (non-interactive; do not use bare `nix develop` in scripts — it may skip work without a TTY):
 
 ```bash
-nix develop .#ci
+nix develop --command bash -euo pipefail -c 'mdbook-mermaid install && mdbook build'
 ```
 
 ## Content

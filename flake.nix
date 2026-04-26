@@ -15,13 +15,6 @@
     ];
     forEachSystem = f: nixpkgs.lib.genAttrs systems (system: f (import nixpkgs { inherit system; }));
     mdBookDeps = pkgs: with pkgs; [ mdbook mdbook-mermaid mdbook-toc ];
-    ciHook = ''
-      set -euo pipefail
-      # Install vendored Mermaid bundle next to book.toml (required by book.toml additional-js)
-      mdbook-mermaid install
-      mdbook build
-      exit
-    '';
   in
   {
     devShells = forEachSystem (pkgs: {
@@ -34,14 +27,9 @@
           echo "One-time Mermaid assets:  mdbook-mermaid install"
           echo "Build:                    mdbook build"
           echo "Serve:                    mdbook serve --open"
-          echo "CI-style build (exit):    nix develop .#ci"
+          echo "Non-interactive build:    nix develop --command bash -euo pipefail -c 'mdbook-mermaid install && mdbook build'"
           echo ""
         '';
-      };
-
-      ci = pkgs.mkShell {
-        packages = mdBookDeps pkgs;
-        shellHook = ciHook;
       };
     });
   };

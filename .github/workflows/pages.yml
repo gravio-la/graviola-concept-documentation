@@ -25,7 +25,9 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build book
-        run: nix develop .#ci
+        # Bare `nix develop` is interactive; in Actions stdin is closed and the shell
+        # can exit before shellHook runs — so always use --command for CI.
+        run: nix develop --accept-flake-config --command bash -euo pipefail -c 'mdbook-mermaid install && mdbook build'
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
