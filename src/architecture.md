@@ -41,5 +41,6 @@ Writes follow the inverse pipeline: form data is validated against the schema, t
 ## See also
 
 - [Capabilities today](capabilities-today.md) — what each layer provides in product terms.
+- [LinkML as an authoring source for schemas](linkml-authoring.md) — optional build-time generation of JSON Schema and companion artifacts feeding the same pipeline.
 - [Deployment scenarios](deployment-scenarios.md) — which layers matter in which deployments.
 - [Glossary](glossary.md) — [Browser/server symmetry](glossary.md#62-browserserver-symmetry), [AbstractDatastore](glossary.md#66-abstractdatastore).

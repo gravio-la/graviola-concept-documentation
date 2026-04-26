@@ -17,5 +17,6 @@
 # Part III — Direction & vocabulary
 
 - [Architectural trajectory](trajectory.md)
+- [LinkML as an authoring source for schemas](linkml-authoring.md)
 - [Glossary](glossary.md)
 - [Further reading](further-reading.md)

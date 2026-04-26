@@ -14,6 +14,8 @@ Given a JSON Schema definition with `@id` and `@type` semantics, Graviola provid
 
 The CRUD pipeline translates JSON Schema definitions into store-appropriate operations. For SPARQL backends, this means generating CONSTRUCT queries for reads and INSERT/DELETE patterns for writes; for Prisma backends, it means typed ORM operations; for REST, configurable endpoint patterns.
 
+Whether JSON Schema (and companion UI or mapping files) are **authored by hand** or **generated in the application build** — for example from [LinkML](linkml-authoring.md) — does not change this pipeline: Graviola consumes the same outputs at runtime.
+
 ---
 
 ## Form rendering
@@ -80,5 +82,6 @@ This symmetry is a load-bearing property of Graviola's design and shapes how new
 ## See also
 
 - [Architecture and data flow](architecture.md) — how these pieces connect.
+- [LinkML as an authoring source for schemas](linkml-authoring.md) — optional build-time generation of today's artifacts.
 - [Glossary](glossary.md) — [AbstractDatastore](glossary.md#66-abstractdatastore), [Declarative mapping](glossary.md#31-declarative-mapping), [JSON Forms](glossary.md#65-json-forms).
 - [Architectural trajectory](trajectory.md) — planned extensions (lenses, calcs, signing) *not* guaranteed by this chapter.

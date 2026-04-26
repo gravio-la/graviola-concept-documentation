@@ -5,11 +5,12 @@ This book is **conceptual documentation** for [Graviola](https://github.com/grav
 ## What you will find here
 
 - **Problem framing** — why federated, multi-source, and evolving models strain conventional tooling ([The shape of a federated application](federated-application.md)).
-- **What Graviola is today** — JSON Schema as a single source of truth, storage-agnostic backends, forms, tables, and declarative authority mapping ([What Graviola is](what-graviola-is.md), [Capabilities today](capabilities-today.md)).
+- **What Graviola is today** — JSON Schema as the runtime contract for the model, storage-agnostic backends, forms, tables, and declarative authority mapping ([What Graviola is](what-graviola-is.md), [Capabilities today](capabilities-today.md)).
 - **How it is structured** — layers and read/write data flow ([Architecture and data flow](architecture.md)).
 - **Where it runs** — representative deployment shapes ([Deployment scenarios](deployment-scenarios.md)).
 - **Honest scope** — non-goals and when *not* to reach for Graviola ([Limits, fit, and evaluation](limits-and-fit.md)).
 - **Where it is heading** — architectural trajectory, clearly separated from production guarantees ([Architectural trajectory](trajectory.md)).
+- **Authoring upstream of JSON Schema** — optional build-time modeling (for example [LinkML as an authoring source for schemas](linkml-authoring.md)) that still emits the JSON Schema, UI schema, and mapping artifacts Graviola consumes at runtime.
 - **Shared vocabulary** — terms, literature, and open questions ([Glossary](glossary.md), [Further reading](further-reading.md)).
 
 ## What this book is *not*
@@ -24,6 +25,7 @@ This book is **conceptual documentation** for [Graviola](https://github.com/grav
 2. Read [What Graviola is](what-graviola-is.md) and [Capabilities today](capabilities-today.md) for the **current** product story.
 3. Use [Architecture and data flow](architecture.md) as the map of layers and pipelines.
 4. Treat [Architectural trajectory](trajectory.md) and the [Glossary](glossary.md) as **deepening** material—optional until you need precision on lenses, sync, trust, etc.
+5. If authoring fragmentation (many files per model) matters to your team, read [LinkML as an authoring source for schemas](linkml-authoring.md) for a build-time pattern that leaves Graviola's runtime unchanged.
 
 Canonical **seed** sources for this edition live under [`seed/`](https://github.com/gravio-la/graviola-conceptual-documentation/tree/main/seed) in the same repository; chapters here are the book-shaped rearrangement of that content.
 
