@@ -1,0 +1,20 @@
+[book]
+authors = ["Graviola contributors"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Graviola — Concepts & Architecture"
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[preprocessor.toc]
+command = "mdbook-toc"
+
+[output.html]
+# Repository Pages: set this to https://<owner>.github.io/<repo>/
+# so navigation and assets resolve correctly when deployed.
+git-repository-url = "https://github.com/gravio-la/graviola-conceptual-documentation"
+edit-url-template = "https://github.com/gravio-la/graviola-conceptual-documentation/edit/main/{path}"
+site-url = "https://gravio-la.github.io/graviola-conceptual-documentation/"
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
