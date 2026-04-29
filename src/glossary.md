@@ -29,9 +29,11 @@ Schemas (LinkML, JSON Schema, SHACL shapes) are not ambient configuration baked 
 ### 1.2 Structural Dispatch
 The architectural principle that behavior — UI rendering, mapping, validation, calculation, lens application — is bound to the *shape* declared by a schema (or to a property carried by an entity), not to a nominal type or class. This single pattern recurs at every layer of Graviola and is what allows components to survive [Schema Drift](#24-schema-drift) without code changes.
 
+Dispatch is itself a schema-level operation: testers match against [Scopes](#15-scope) (schema-node pointers) rather than [Binding Paths](#16-binding-path) (data traversals). This is why a renderer registered for `#/properties/birthDate` works against any `Person` instance without further configuration.
+
 *Example:* JSON Forms resolves a renderer for `{type: "string", format: "date"}` regardless of which entity type contains the field. The same principle drives lens dispatch by [Entity Version](#22-entity-version) and class derivation by property (see [Derived Versioned Class](#23-derived-versioned-class)).
 
-*See also:* [JSON Forms](#65-json-forms), [Declarative Mapping](#31-declarative-mapping).
+*See also:* [Scope](#15-scope), [JSON Forms](#65-json-forms), [Declarative Mapping](#31-declarative-mapping).
 
 *References:*
 - [JSON Forms](https://jsonforms.io/)
@@ -58,6 +60,34 @@ Graviola's conceptual model is shaped by description-logic and rule-based reason
 *References:*
 - [W3C OWL 2 RL Profile](https://www.w3.org/TR/owl2-profiles/#OWL_2_RL)
 - [SHACL Advanced Features](https://www.w3.org/TR/shacl-af/)
+
+---
+
+### 1.5 Scope
+A pointer into a schema document — a [JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901) such as `#/properties/name` — that identifies a *schema node*: a property definition, a type definition, or a rule. Scopes exist at schema-compile time and are absolute relative to a single schema document; they answer the question *where in the schema does this apply?* JSON Forms uses scopes to bind UI elements to schema nodes (`scope: "#/properties/name"` means "this UI element corresponds to this schema node"). A scope navigates the schema document, not the data graph; it never crosses a `$ref` to another entity and has no concept of a current instance.
+
+In knowledge-representation terms a scope is a **TBox** pointer: it addresses the schema, not the data.
+
+*Example:* A renderer registry tester matching `scope: "#/properties/birthDate"` selects the schema property declaration regardless of which `Person` instance is rendered. The same scope is correct on the empty form, on a half-filled form, and on a saved entity.
+
+*See also:* [Binding Path](#16-binding-path), [Structural Dispatch](#12-structural-dispatch), [JSON Forms](#65-json-forms).
+
+*References:*
+- [RFC 6901 — JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901)
+- [JSON Forms UI Schema](https://jsonforms.io/docs/uischema/) — `scope` semantics.
+
+---
+
+### 1.6 Binding Path
+A traversal through instance data, guided by the schema, that resolves to one or more *data values* relative to a current entity. A binding path such as `patch.lane.owner` starts at "the current instance," follows declared relations across `$ref` boundaries, and may fan out to many values when any hop is an array. Paths exist at runtime, against a live store; they answer the question *what value do I need from the data graph?*
+
+In knowledge-representation terms a binding path is an **ABox** traversal, *shaped by the TBox*: the schema declares which hops are valid; the data supplies the values.
+
+*Example:* A formula binding `EQ(ownerId, currentUserId)` resolves `ownerId` by following `lane.owner.id` from the current `Patch`. Substituting a [Scope](#15-scope) here would be a category error: schema nodes have no runtime values to compare.
+
+*Rule of thumb:* use a [Scope](#15-scope) when you are describing something about the schema structure itself — which property a rule applies to, which field a renderer corresponds to, which definition an annotation targets. Use a binding path when you are describing a traversal through data — what value to retrieve, what relation to follow, what to compute over. Scopes are answered by the schema alone; binding paths are answered by the schema *plus* the data.
+
+*See also:* [Scope](#15-scope), [Calculated Field](#41-calculated-field), [Structural Dispatch](#12-structural-dispatch).
 
 ---
 
@@ -250,9 +280,11 @@ The (largely separate) problem of relating *concepts* across vocabularies, e.g.,
 ### 4.1 Calculated Field
 A schema property whose value is derived from other fields by a declarative formula (HyperFormula-style or similar) rather than stored directly. Structurally equivalent to a one-directional lens (`get` only).
 
-*Example:* `Person.fullName` calculated as `CONCAT(forename, " ", surname)`.
+Formula inputs are addressed by [Binding Paths](#16-binding-path), not by [Scopes](#15-scope): a calc must read live values from the current entity (and its declared relations), so its references are ABox traversals shaped by the schema. Schema-node pointers would be a category error here — there is nothing to compute over until a path is resolved against actual data.
 
-*See also:* [Stratification](#43-stratification), [Incremental View Maintenance](#44-incremental-view-maintenance-ivm).
+*Example:* `Person.fullName` calculated as `CONCAT(forename, " ", surname)`; an aggregate calc on a `Patch` reads `lane.owner.id` via a binding path that crosses a `$ref` boundary.
+
+*See also:* [Binding Path](#16-binding-path), [Stratification](#43-stratification), [Incremental View Maintenance](#44-incremental-view-maintenance-ivm).
 
 *References:*
 - [HyperFormula](https://hyperformula.handsontable.com/) — the formula engine Graviola's calc layer is patterned after.
@@ -378,6 +410,10 @@ A monorepo discipline distinguishing **spine** packages (interfaces, contracts, 
 
 ### 6.5 JSON Forms
 The schema-driven form rendering library Graviola uses for UI generation. Embodies [Structural Dispatch](#12-structural-dispatch): a renderer registry resolves shape→component at runtime, decoupling UI from concrete entity types.
+
+UI schema elements bind to schema nodes via a [Scope](#15-scope) (e.g., `scope: "#/properties/name"`). Scopes here address the schema, not the data — a property a Graviola application reuses when it adds annotations or rules at the same surface. Operations that read or write entity values (calculated fields, formula bindings, traversals across `$ref`) use [Binding Paths](#16-binding-path) instead.
+
+*See also:* [Scope](#15-scope), [Binding Path](#16-binding-path).
 
 *References:*
 - [JSON Forms](https://jsonforms.io/) (EclipseSource).
