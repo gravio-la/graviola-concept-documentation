@@ -133,11 +133,13 @@ The condition in which entities within a federation — or within a single store
 ---
 
 ### 2.5 Lens
-A pair of transformations between two schema versions (or between two parallel schemas) consisting of a forward function (`get`) and a reverse function (`put`). Lenses are Graviola's primary mechanism for handling [Schema Drift](#24-schema-drift). The lens engine is an *optional, pluggable component* — a concrete [AbstractDatastore](#66-abstractdatastore) implementation may or may not enable it, and many Graviola applications run without it.
+A pair of transformations consisting of a forward function (`get`) and a reverse function (`put`), ideally satisfying [Lens Law](#28-lens-law) round-trip properties. Lenses are Graviola's primary mechanism for handling [Schema Drift](#24-schema-drift) between schema versions.
+
+The trajectory direction (July 2026) reframes lenses as the **unifying concept** behind inverse properties (`x-inverseOf`), [writable computed fields](#413-put-graviola-sense), reversible [Declarative Mapping](#31-declarative-mapping), and version migrations — see [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md). The lens engine is an *optional, pluggable component*; many Graviola applications run without it.
 
 *Example:* A lens from `Person_V1` (single `name` field) to `Person_V2` (`forename`, `surname`) defines how to split forward and how to recombine backward.
 
-*See also:* [Asymmetric Lens](#26-asymmetric-lens), [Symmetric Lens](#27-symmetric-lens), [Lens Law](#28-lens-law), [Lens Composition](#210-lens-composition).
+*See also:* [Asymmetric Lens](#26-asymmetric-lens), [Symmetric Lens](#27-symmetric-lens), [Lens Law](#28-lens-law), [Lens Composition](#210-lens-composition), [Put (Graviola sense)](#413-put-graviola-sense).
 
 *References:*
 - Foster, Greenwald, Moore, Pierce, Schmitt, [*"Combinators for Bidirectional Tree Transformations"*](https://www.cis.upenn.edu/~bcpierce/papers/lenses-toplas-final.pdf) (TOPLAS 2007).
@@ -297,7 +299,11 @@ The DAG of which calculated fields read which other fields. Used to determine re
 ---
 
 ### 4.3 Stratification
-The ordering of a [Dependency Graph](#42-dependency-graph) into layers such that each layer depends only on previous layers. Required for safe evaluation of recursive or aggregate calculations in Datalog-style systems.
+The ordering of a [Dependency Graph](#42-dependency-graph) into layers (strata) such that each layer depends only on previous layers. In Graviola's intended calc design, stratification assigns computed slots a stratum via grouped topological sort; an **auth or completeness boundary** separates Stratum 1 (intrinsic formulas, auth-rule-safe) from Stratum 2+ (contextual formulas over scoped data slices). Auth rules referencing Stratum 2+ are compile errors. Cycles are errors, never fixpoints.
+
+*Status:* designed for `@graviola/formula-dependency`; not yet in production. See [Calculated fields](calculated-fields.md).
+
+*See also:* [Boundary profile](#412-boundary-profile), [Compiled profile](#410-compiled-profile).
 
 *References:*
 - Abiteboul, Hull, Vianu, [*Foundations of Databases*](http://webdam.inria.fr/Alice/) (1995), ch. on stratified Datalog (free PDF available).
@@ -345,6 +351,41 @@ Genuinely an open problem when combined with [Schema Drift](#24-schema-drift) ac
 
 ---
 
+### 4.9 Calc profile (sidecar)
+A scope-keyed JSON document carrying computation declarations for a fingerprinted domain schema. Third instance of [the sidecar pattern](sidecar-pattern.md) after UI schema and [MetaSchema](#620-metaschema). Keys are [Scopes](#15-scope); binding declarations inside entries are [Binding Paths](#16-binding-path).
+
+*Status:* proposed. See [Calculated fields](calculated-fields.md).
+
+---
+
+### 4.10 Compiled profile
+Fully expanded, derived computation artifact: strata, cardinalities, reverse `dependents`, eval placement, source candidates. Serialized JSON keyed by `schemaFingerprint`; the only form containing derived facts (never the authored sidecar). Zero graph libraries at runtime.
+
+*Status:* proposed.
+
+---
+
+### 4.11 Defaults ladder
+Authoring principle for calculated fields: simplest form is a bare formula string; every escalation (paths, bindings, context roots, aggregates, resolvers, puts) is opt-in. Debug expansion lives in the [Compiled profile](#410-compiled-profile), not in authored forms.
+
+*Status:* proposed. See [Calculated fields — The defaults ladder](calculated-fields.md#the-defaults-ladder).
+
+---
+
+### 4.12 Boundary profile
+Parameterized input to stratification: auth rules (server) and/or completeness-scoped slots (client). Same mechanism enforces security on the server and correctness ("aggregate over incomplete set") in the browser.
+
+*Status:* proposed.
+
+---
+
+### 4.13 Put (Graviola sense)
+Explicitly authored reverse direction of a computed slot in the calc profile; targets Stratum 0 slots only in v1. Presence makes the derived-schema property writable; absence keeps `readOnly: true`. Formulas are never inverted symbolically.
+
+*Status:* proposed. See [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md).
+
+---
+
 ## 5. Authority, Trust, & Provenance
 
 ### 5.1 Authority
@@ -379,6 +420,34 @@ A computed score for a piece of data based on the number, identity, and reputati
 
 ---
 
+### 5.6 Statement-level metadata
+Fact-granularity metadata on individual asserted values: source, rank, generated-at, qualifiers. Canonical logical model: Wikidata statement-node pattern (truthy property + one-hop-longer statement structure), expressible in plain SPARQL 1.1. Capability-gated by store encoding (`rdf-star`, `statement-node`, `named-graph`, `side-table`, `none`).
+
+*Status:* proposed. See [Provenance and metadata](provenance-and-metadata.md).
+
+---
+
+### 5.7 Truthy property / statement sibling (`$stmt`)
+Wikidata-model pair in derived schemas: direct resolved value plus a `$stmt` array of per-statement records. Dual-asserted on write; never derived at query time.
+
+*Status:* proposed.
+
+---
+
+### 5.8 On-conflict reification
+Provenance write policy: statement nodes created only when a second source asserts a conflicting value; the truthy triple becomes a resolved value (rank + source trust weight).
+
+*Status:* proposed.
+
+---
+
+### 5.9 Administrative (record-level) metadata
+Entity-granularity metadata (`$meta`): created, modified, schemaVersion, provenance. Framework-guaranteed on all backends; system-asserted only (never user-supplied on write). Distinct from descriptive schema fields.
+
+*Status:* proposed. See [Provenance and metadata](provenance-and-metadata.md).
+
+---
+
 ## 6. Architecture & Deployment
 
 ### 6.1 Local-First
@@ -395,7 +464,7 @@ The Graviola constraint that core layers (lens engine, validator, IVM) run ident
 ---
 
 ### 6.3 Classical Migration
-The traditional path of evolving a schema by writing imperative migration scripts run in staging and production, typically against a relational or document database via an ORM. Graviola supports this path explicitly: where an application has strong authorship over its data model and runs a centralized backend (e.g., [Prisma](https://www.prisma.io/) on PostgreSQL or MongoDB), the [Lens](#25-lens) machinery is unnecessary and the application uses Prisma migrations directly. The lens engine is plugged into a concrete [AbstractDatastore](#66-abstractdatastore) implementation only when [Schema Drift](#24-schema-drift) across uncoordinated peers is actually a concern.
+The traditional path of evolving a schema by writing imperative migration scripts run in staging and production, typically against a relational or document database via an ORM. Graviola supports this path explicitly: where an application has strong authorship over its data model and runs a centralized backend (e.g., [Prisma](https://www.prisma.io/) on PostgreSQL or MongoDB), the [Lens](#25-lens) machinery is unnecessary and the application uses Prisma migrations directly. The lens engine is plugged into a concrete [Store](#621-store) implementation only when [Schema Drift](#24-schema-drift) across uncoordinated peers is actually a concern.
 
 This dual path is deliberate. Lenses solve a real but specific problem (federated, uncoordinated, version-skewed peers); classical migration solves the common case (one team owns the database). Graviola treats both as first-class.
 
@@ -421,9 +490,73 @@ UI schema elements bind to schema nodes via a [Scope](#15-scope) (e.g., `scope: 
 ---
 
 ### 6.6 AbstractDatastore
-Graviola's interface contract for a concrete data backend. Implementations include in-memory stores, Yjs-backed stores, SPARQL endpoints, Prisma-backed relational stores, and others. The lens engine, IVM layer, and signing layer are *opt-in* features that a given `AbstractDatastore` implementation may or may not expose; consumers of an `AbstractDatastore` discover available capabilities through its declared interface.
+**Legacy** interface contract for a concrete data backend, still present in many packages. The current successor is the [Store](#621-store) interface in `@graviola/store-core`. New concept material uses Store and [CapabilityDescriptor](#622-capabilitydescriptor) only.
 
-*See also:* [Capability Context](#47-capability-context), [Classical Migration](#63-classical-migration).
+*See also:* [Store](#621-store), [Capability Context](#47-capability-context), [Classical Migration](#63-classical-migration).
+
+---
+
+### 6.19 Concise Bounded Description (CBD)
+Formal name for Graviola's named-entity boundary: descend through anonymous/subordinate structure; halt at named IRIs. Unit of consistency, metadata, and write granularity. The extract-graph pipeline has implicitly used this rule; naming it makes entity-level metadata rigorous.
+
+*See also:* [CBD-cut invariant](#627-cbd-cut-invariant), [Administrative metadata](#59-administrative-record-level-metadata).
+
+*References:*
+- [W3C SPARQL 1.1 — CONSTRUCT with CBD](https://www.w3.org/TR/sparql11-query/#rConstructTriples) (CBD as a standard graph extraction pattern).
+
+---
+
+### 6.20 MetaSchema
+Registered companion JSON Schema describing entity-level `$meta`; base profile (created / modified / schemaVersion) plus application extensions with IRI mappings. Schema-as-data, versioned (`gra:metaSchemaVersion`). Third [sidecar](sidecar-pattern.md) instance alongside UI schema and calc profile.
+
+*Status:* proposed.
+
+---
+
+### 6.21 Store
+Graviola's current storage interface in `@graviola/store-core`: capability facets composed by intersection, mirrored at runtime by the `CapabilityDescriptor`. Trajectory extensions (provenance encoding, shape fidelity, etc.) are new facets and descriptor blocks — not methods on a monolithic interface.
+
+*See also:* [CapabilityDescriptor](#622-capabilitydescriptor), [Store topology](store-topology.md).
+
+---
+
+### 6.22 CapabilityDescriptor
+Runtime mirror of a Store's composed capability facets. Declares what the store can do natively versus what the framework simulates. Supersedes the informal "capability matrix" vocabulary.
+
+---
+
+### 6.23 `deriveExtendedSchema` / `deriveProvenanceSchema`
+Pure Layer-1 derivations that graft `$meta` (per CBD) or `$stmt` (per property) onto domain schemas for read/query/render paths. Write validation consumes the domain artifact only.
+
+*Status:* proposed.
+
+---
+
+### 6.24 `derivedFrom`
+Registry relation: this store is rebuildable from a named authority store. Drives reindexing, invalidation direction, and trust ordering in federation.
+
+*Status:* proposed. See [Store topology](store-topology.md).
+
+---
+
+### 6.25 Composite store
+Multiple physical engines behind one `Store`, declaring the union of capabilities; exists to hide store boundaries that would cut a [CBD](#619-concise-bounded-description-cbd).
+
+*Status:* proposed.
+
+---
+
+### 6.26 Shape fidelity
+Capability flag: store returns schema-shaped documents; when true, the graph-traversal extract step is skipped.
+
+*Status:* proposed.
+
+---
+
+### 6.27 CBD-cut invariant
+> The entity boundary (CBD) is the unit of consistency and metadata; the store boundary is the unit of availability, capability, and provenance. The store boundary must never visibly cut the entity boundary.
+
+*Status:* proposed invariant. See [Store topology](store-topology.md).
 
 ---
 
