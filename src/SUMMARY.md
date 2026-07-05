@@ -18,6 +18,11 @@
 
 - [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md)
 - [Architectural trajectory](trajectory.md)
+- [The sidecar pattern](sidecar-pattern.md)
+- [Calculated fields](calculated-fields.md)
+- [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md)
+- [Provenance and metadata](provenance-and-metadata.md)
+- [Store topology](store-topology.md)
 - [LinkML as an authoring source for schemas](linkml-authoring.md)
 - [Outlook and open questions](outlook-and-open-questions.md)
 - [Glossary](glossary.md)

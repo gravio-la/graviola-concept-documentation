@@ -1,6 +1,6 @@
 # Architectural trajectory
 
-The capabilities below are **not yet implemented in production** in the form described. They represent the architectural direction of the framework, informed by both prior research and the requirements of Graviola's existing users. Each is documented here so that current development decisions remain compatible with these directions.
+The capabilities below are **not yet implemented in production** in the form described. They represent the architectural direction of the framework, informed by both prior research and the requirements of Graviola's existing users. Each is documented so that current development decisions remain compatible with these directions.
 
 The discipline applied to this section: a capability is described here only when its shape is clear enough that the team has chosen not to foreclose it through current design choices.
 
@@ -10,6 +10,22 @@ For **what ships today**, see [Capabilities today](capabilities-today.md).
 
 **Generative tooling versus trajectory:** assistance that drafts or refines schemas, forms, and mappings (see [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md)) attaches to the same declarative surfaces Graviola already uses; it does not substitute for the runtime capabilities sketched below.
 
+**Vocabulary note:** the **`Store`** interface in `@graviola/store-core` (capability facets + `CapabilityDescriptor`) is current reality. The term *AbstractDatastore* is legacy in new material; trajectory extensions are expressed as **new capability facets, descriptor extensions, and `ReadResult` envelope extensions** — not as methods on a monolithic interface.
+
+---
+
+## Detailed trajectory chapters
+
+The topics below have dedicated chapters with design detail, invariants, and examples:
+
+| Topic | Chapter | Status |
+|---|---|---|
+| Scope-keyed sidecars (UI, calc, meta) | [The sidecar pattern](sidecar-pattern.md) | UI schema: production; calc + MetaSchema: proposed |
+| Calculated fields, stratification, compilation | [Calculated fields](calculated-fields.md) | Proposed / partially designed |
+| Lenses, writable computeds, `x-inverseOf` retirement | [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md) | Proposed |
+| Fact-level and entity-level metadata | [Provenance and metadata](provenance-and-metadata.md) | Proposed |
+| Federation registry, composites, CBD-cut | [Store topology](store-topology.md) | Proposed |
+
 ---
 
 ## Schema evolution via lenses
@@ -18,7 +34,9 @@ Schemas evolve over the lifetime of an application. In Graviola's current deploy
 
 The architectural direction is to express version-to-version transformations as **bidirectional lenses** — small, composable, declarative documents that describe how to migrate data forward to a newer schema and, where possible, backward to an older one. This is a well-studied pattern; the closest existing implementation is [Project Cambria](https://www.inkandswitch.com/cambria/) from Ink & Switch.
 
-In Graviola's intended model, each entity carries a `gra:version` property identifying the schema version under which it was authored. A consumer encountering an entity at a different version applies the appropriate lens chain at query time. The lens engine is an opt-in capability of an `AbstractDatastore` implementation, not a requirement.
+In Graviola's intended model, each entity carries a `gra:version` property identifying the schema version under which it was authored. A consumer encountering an entity at a different version applies the appropriate lens chain at query time. The lens engine is an opt-in capability of a Store implementation, not a requirement.
+
+The July 2026 design session reframes lenses as the **unifying concept** behind inverse properties, writable computeds, reversible mappings, and version migrations — see [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md).
 
 Related glossary entries: [Lens](glossary.md#25-lens), [Entity version](glossary.md#22-entity-version), [Schema drift](glossary.md#24-schema-drift), [Lens-as-data](glossary.md#29-lens-as-data).
 
@@ -26,11 +44,27 @@ Related glossary entries: [Lens](glossary.md#25-lens), [Entity version](glossary
 
 ## Calculated fields
 
-Some schema properties are best expressed as derivations rather than stored values: a person's full name from forename and surname; an aggregate computed across linked entities; a status flag derived from temporal conditions. The intended mechanism is a declarative formula language (HyperFormula-shaped), with each calculated field declaring its dependencies, its complexity class, and the resources it requires to evaluate.
+Some schema properties are best expressed as derivations rather than stored values. The intended mechanism is a declarative formula language with dependency graphs, auth/completeness stratification, and capability-aware evaluation placement.
 
-The complexity and capability annotations matter because Graviola's deployment targets range from in-browser applications on commodity hardware to server-side processes with substantial compute. A calculated field that is acceptable on a server may be prohibitive in a browser; the runtime will choose between eager and lazy evaluation, or refuse to evaluate, based on the host's declared capabilities.
+See [Calculated fields](calculated-fields.md) for the full design: [defaults ladder](calculated-fields.md#the-defaults-ladder), [calc profile sidecar](calculated-fields.md#calc-profile-sidecar), [compilation and stratification](calculated-fields.md#compilation-dependency-graph-and-stratification), and the compile/runtime invariants.
 
-Related glossary entries: [Calculated field](glossary.md#41-calculated-field), [Capability context](glossary.md#47-capability-context), [IVM](glossary.md#44-incremental-view-maintenance-ivm).
+Related glossary entries: [Calculated field](glossary.md#41-calculated-field), [Capability context](glossary.md#47-capability-context), [Stratification](glossary.md#43-stratification), [Compiled profile](glossary.md#410-compiled-profile).
+
+---
+
+## Provenance and administrative metadata
+
+Beyond pipeline-level provenance in read results, the trajectory adds **statement-level metadata** (Wikidata-model `$stmt` siblings) and **entity-level `$meta`** (framework-guaranteed on all backends). Both integrate via [The sidecar pattern](sidecar-pattern.md) and pure Layer-1 schema derivations.
+
+See [Provenance and metadata](provenance-and-metadata.md).
+
+---
+
+## Store federation and topology
+
+Multiple stores — authoritative triple stores, derived search indexes, read-only application translators — are intended to register behind a federation layer with explicit dimensions (authority, derivability, shape fidelity) and composite stores that hide boundaries cutting through an entity.
+
+See [Store topology](store-topology.md).
 
 ---
 
@@ -48,16 +82,17 @@ Related glossary entries: [Signed state](glossary.md#54-signed-state), [Authorit
 
 Graviola's existing storage layer treats data as documents. The intended extension is to treat **schemas and lenses themselves as documents** — JSON-LD documents with stable `@id`s, syncing through the same transport (Yjs, Solid, SPARQL endpoints) as application data. This generalizes a pattern observed in field deployments where domain experts authored schemas via JSON Forms-based designers and distributed them peer-to-peer alongside the data.
 
-When schemas, lenses, and data all flow through one transport, signing extends uniformly to all three.
+When schemas, lenses, and data all flow through one transport, signing extends uniformly to all three. MetaSchema extends the same pattern to administrative metadata documents.
 
-Related glossary entries: [Schema-as-data](glossary.md#11-schema-as-data), [Federated sync layer](glossary.md#13-federated-sync-layer).
+Related glossary entries: [Schema-as-data](glossary.md#11-schema-as-data), [Federated sync layer](glossary.md#13-federated-sync-layer), [MetaSchema](glossary.md#620-metaschema).
 
 ---
 
 ## See also
 
+- [The sidecar pattern](sidecar-pattern.md) — cross-cutting structural convention.
 - [Deployment scenarios](deployment-scenarios.md) — where trajectory topics intersect real deployments.
 - [LinkML as an authoring source for schemas](linkml-authoring.md) — optional upstream authoring; runtime trajectory unchanged.
-- [Outlook and open questions](outlook-and-open-questions.md) — unresolved design tensions at the frontier ([Cross-version calc sync](outlook-and-open-questions.md#cross-version-calc-sync), etc.).
+- [Outlook and open questions](outlook-and-open-questions.md) — unresolved design tensions at the frontier.
 - [Glossary](glossary.md) — definitions and references in one place.
 - [Further reading](further-reading.md).
