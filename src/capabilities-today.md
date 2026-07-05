@@ -99,17 +99,21 @@ This layer is currently used for ingestion from Wikidata, GND, and DBpedia in cu
 
 The current storage contract is the **`Store`** interface in `@graviola/store-core` (capability facets + `CapabilityDescriptor`). Many packages still expose the legacy **`AbstractDatastore`** name; behavior is the same seam.
 
-Concrete Store implementations available today:
+Concrete Store implementations and providers available today:
 
-| Backend | Status | Typical use |
-|---|---|---|
-| In-browser Oxigraph (WebAssembly) | Production | Local-first applications, no-server deployments |
-| Remote SPARQL endpoint | Production | Federated data, existing institutional triple stores |
-| Prisma (PostgreSQL, SQLite, others) | Production | Internal tools, classical web applications |
-| REST API | Production | Integration with existing HTTP services |
-| In-memory (Zustand) | Production | Testing, prototyping |
+| Backend | Stack | Status | Typical use |
+|---|---|---|---|
+| In-browser Oxigraph (WebAssembly) | Oxigraph in a WebWorker | Production | Local-first applications, no-server deployments |
+| Remote SPARQL endpoint | HTTP SPARQL against Fuseki, Oxigraph, Blazegraph, … | Production | Federated data, existing institutional triple stores |
+| **N3 in-memory** | [`@rdfjs/data-model`](https://github.com/rdfjs-base/data-model) `DatasetCore` backed by [`n3`](https://github.com/rdfjs/N3.js) `Store`, queried via **Comunica** (`@comunica/query-sparql-rdfjs`) | Production | Fast in-browser RAM store — tests, Storybook, prototyping (`InMemoryStoreProvider`) |
+| **IndexedDB hexastore** | Same Comunica SPARQL layer over `@graviola/indexeddb-dataset` (persistent hexastore in the browser) | Experimental (slow) | Durable browser persistence without the Oxigraph worker (`IndexedDBStoreProvider`) |
+| Prisma (PostgreSQL, SQLite, others) | Typed ORM | Production | Internal tools, classical web applications |
+| REST API | Configurable HTTP patterns | Production | Integration with existing HTTP services |
+| **HDT (WASM)** | Read-only access to compressed HDT dumps via a WASM implementation | In development | Large read-mostly RDF corpora without full materialisation |
 
-The SPARQL backend supports multiple dialects (standard SPARQL 1.1, Oxigraph, Blazegraph, Allegro) selectable per deployment.
+The two **Comunica + `@rdfjs` dataset** providers live in `@graviola/indexeddb-store-provider`. Both expose the same SPARQL CRUD surface to the framework; they differ only in where triples are held — RAM (`n3.Store`) versus IndexedDB. Oxigraph and remote SPARQL use separate engines (`@graviola/local-oxigraph-store-provider`, `@graviola/sparql-store-provider`).
+
+The SPARQL path supports multiple dialects for remote and Oxigraph backends (standard SPARQL 1.1, Oxigraph, Blazegraph, Allegro) selectable per deployment. Comunica-backed stores use standard SPARQL 1.1.
 
 Federation across multiple registered stores is **trajectory** — see [Store topology](store-topology.md).
 
