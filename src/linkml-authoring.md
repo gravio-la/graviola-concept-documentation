@@ -2,7 +2,7 @@
 
 This chapter describes an **optional authoring path** for teams using Graviola: adopt [LinkML](https://linkml.io/) as a single document they edit, then run a **build-time generator** that emits the same artifacts Graviola already consumes — JSON Schema or Zod, JSON Forms UI schema, mapping and other declarative configuration. **Graviola at runtime is unchanged** and takes no LinkML dependency.
 
-For **what ships today** in the framework, see [Capabilities today](capabilities-today.md). Planned features mentioned below (for example calculated fields) are described under [Architectural trajectory](trajectory.md).
+For **what ships today** in the framework, see [Capabilities today](capabilities-today.md). Planned features mentioned below (for example calculated fields, MetaSchema) are described under [Architectural trajectory](trajectory.md) and its detailed chapters — [Calculated fields](calculated-fields.md), [The sidecar pattern](sidecar-pattern.md).
 
 ---
 
@@ -21,7 +21,9 @@ At runtime these pieces are unified by a shared addressing convention: scopes (J
 
 What is awkward at **authoring** time is fragmentation: domain experts may edit several files in several formats, each with its own naming and reuse conventions.
 
-One concrete example: an `x-inverseOf` extension can declare that one property is the reverse of another. JSON Schema has no native inverse; the extension lets the query planner and graph-to-JSON extractor know which side is canonical. It works, but it pushes semantic detail into a vocabulary that was not designed for it. Similar pressures appear as the framework grows.
+The intended trajectory consolidates orthogonal concerns into **scope-keyed sidecars** while keeping the domain JSON Schema pure — see [The sidecar pattern](sidecar-pattern.md). UI schema is already a sidecar in production; calc profiles and MetaSchema follow the same dispatch rule.
+
+One concrete example: an `x-inverseOf` extension can declare that one property is the reverse of another. JSON Schema has no native inverse; the extension lets the query planner and graph-to-JSON extractor know which side is canonical. It works, but it pushes semantic detail into a vocabulary that was not designed for it — and is on a retirement path toward the general [lens](lenses-and-bidirectional-transforms.md) mechanism. Similar pressures appear as the framework grows.
 
 ---
 
@@ -47,7 +49,7 @@ Further reading:
 
 ## Build-time pattern
 
-The authored source is a LinkML schema. The application author runs a **generator** in the build pipeline. It emits artifacts that would otherwise be maintained by hand: JSON Schema (or Zod), JSON Forms UI schema, mapping configuration, authorization rules, calculated-field declarations (when the application adopts the trajectory described in [Architectural trajectory](trajectory.md)), and any other agreed outputs.
+The authored source is a LinkML schema. The application author runs a **generator** in the build pipeline. It emits artifacts that would otherwise be maintained by hand: JSON Schema (or Zod), JSON Forms UI schema, mapping configuration, authorization rules, a [calc profile sidecar](calculated-fields.md#calc-profile-sidecar) (when the application adopts calculated fields), a [MetaSchema](provenance-and-metadata.md#the-metaschema-sidecar) companion (when entity-level metadata extensions are needed), and any other agreed outputs.
 
 ```mermaid
 flowchart LR
@@ -58,7 +60,8 @@ flowchart LR
         UI["UI schema"]
         MC["Mapping config"]
         AC["Authorization config"]
-        CC["Calculated field declarations"]
+        CC["Calc profile sidecar"]
+        MS["MetaSchema sidecar"]
     end
 
     subgraph runtimeLayer [Application runtime]
@@ -71,11 +74,13 @@ flowchart LR
     M --> MC
     M --> AC
     M --> CC
+    M --> MS
     JS --> APP
     UI --> APP
     MC --> APP
     AC --> APP
     CC --> APP
+    MS --> APP
 ```
 
 The generator is an **application** concern — CLI, build script, bundler plugin, or small program — not part of Graviola. Generated files can be committed for review or produced in CI; either fits the framework.
@@ -152,10 +157,8 @@ slots:
 
   fullName:
     range: string
-    equals_expression: "{forename} + ' ' + {surname}"
     annotations:
-      calc.complexity: "O(1)"
-      calc.cached: false
+      graviola.computed: 'CONCAT(forename, " ", surname)'
       ui.detail.priority: 1
       ui.label: "Full name"
 
@@ -186,13 +189,13 @@ slots:
       ui.detail.priority: 5
 ```
 
-**Emitted JSON Schema (or Zod)** — ranges, identifiers, required and multivalued flags, and class structure carry over in the usual way for your chosen generator.
+**Emitted JSON Schema (or Zod)** — ranges, identifiers, required and multivalued flags, and class structure carry over. Computed slots appear as ordinary `readOnly: true` properties with no computation vocabulary in the domain artifact.
+
+**Emitted calc profile sidecar** — from `graviola.computed` annotations, scope-keyed, fingerprint-bound to the domain schema. See [Calculated fields — defaults ladder](calculated-fields.md#the-defaults-ladder).
 
 **Emitted UI schema** — from `ui.*` annotations: labels, layout hints, list renderers, field ordering, collapsed lists.
 
-**Inverse** — `inverse: author` on `authoredWorks` replaces a hand-maintained `x-inverseOf`-style declaration. The generator emits whatever companion shape the project uses for the query planner and graph-to-JSON layer; runtime still does not read LinkML.
-
-**Calculated fields** — `equals_expression` and `calc.*` annotations can feed generated declarations aligned with the direction in [Calculated fields](trajectory.md#calculated-fields).
+**Inverse** — `inverse: author` on `authoredWorks` replaces a hand-maintained `x-inverseOf`-style declaration. The generator emits whatever companion shape the project uses for the query planner and graph-to-JSON layer; runtime still does not read LinkML. Long term, inverse is a self-inverse [lens](lenses-and-bidirectional-transforms.md) pattern.
 
 **Authorization** — `auth.*` maps into the application's own rule format; the vocabulary is project-defined.
 
@@ -233,5 +236,7 @@ Runtime Graviola stays centered on JSON Schema (or Zod-derived JSON Schema) plus
 - [What Graviola is](what-graviola-is.md) — runtime role of JSON Schema.
 - [Capabilities today](capabilities-today.md) — production surfaces this path feeds.
 - [Architecture and data flow](architecture.md) — where schemas sit in the pipeline.
-- [Architectural trajectory](trajectory.md) — calculated fields and related directions.
+- [Architectural trajectory](trajectory.md) — calculated fields, provenance, store topology.
+- [The sidecar pattern](sidecar-pattern.md) — why domain schema stays pure.
+- [Calculated fields](calculated-fields.md) — calc profile and compilation design.
 - [Glossary](glossary.md) — shared terms.

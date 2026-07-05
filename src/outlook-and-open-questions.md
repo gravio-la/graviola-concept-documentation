@@ -1,6 +1,6 @@
 # Outlook and open questions
 
-This chapter collects **unresolved design tensions** and research-style questions that arise from combining Graviola's trajectory (lenses, calculated fields, signing, federated sync) with real deployments. It is intentionally separate from the [Glossary](glossary.md), which stays focused on **definitions** and stable vocabulary.
+This chapter collects **unresolved design tensions** and research-style questions that arise from combining Graviola's trajectory (lenses, calculated fields, signing, federated sync, provenance, store topology) with real deployments. It is intentionally separate from the [Glossary](glossary.md), which stays focused on **definitions** and stable vocabulary.
 
 For capabilities that are directionally chosen but not yet production guarantees, see [Architectural trajectory](trajectory.md). For how generative tooling may attach to schema-driven workflows without changing the framework's core contract, see [Graviola in the age of generative tools](graviola-in-the-age-of-generative-tools.md).
 
@@ -30,7 +30,38 @@ When a [Calculated field](glossary.md#41-calculated-field) reads a field that ge
 
 ---
 
+## Cross-CBD puts
+
+When a writable computed's `put` targets bindings outside the current [CBD](glossary.md#619-concise-bounded-description-cbd): one transaction, or rejected write? v1 restricts puts to Stratum 0 slots within the same named entity, but inverse-property usage already performs cross-entity writes (adding a child updates the parent's collection). The restriction may not survive real usage — decide consciously, not by default. See [Lenses and bidirectional transforms](lenses-and-bidirectional-transforms.md#open-question-cross-cbd-puts).
+
+---
+
+## Provenance descriptor naming
+
+The fact-level provenance capability block on the Store descriptor needs naming aligned with `@graviola/store-core` facet conventions before implementation. See [Provenance and metadata](provenance-and-metadata.md).
+
+---
+
+## Sidecar default expansion
+
+Resolved as "terse authored forms, expanded compiled form." Revisit only if debugging pain contradicts. See [Calculated fields](calculated-fields.md).
+
+---
+
+## Relation-query bindings and `where`-in-aggregate
+
+Deferred to level 4 in the [defaults ladder](calculated-fields.md#the-defaults-ladder). Admit only with a concrete use case that the intermediate-slot idiom cannot express.
+
+---
+
+## True IVM vs reverse-dependents
+
+Reverse-`dependents` recomputation from the [compiled profile](glossary.md#410-compiled-profile) is the interim incremental strategy; true delta computation (differential dataflow-style) is a later trajectory item.
+
+---
+
 ## See also
 
 - [Architectural trajectory](trajectory.md) — where each frontier topic connects to intended architecture.
+- [Calculated fields](calculated-fields.md), [Store topology](store-topology.md), [Provenance and metadata](provenance-and-metadata.md) — detailed proposed designs referenced above.
 - [Glossary](glossary.md) — formal definitions and references for terms used above.
